@@ -3,9 +3,8 @@ package com.example.redisproj.handler;
 import com.example.redisproj.dto.UserRequestDto;
 import com.example.redisproj.entity.User;
 import com.example.redisproj.repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,9 +12,6 @@ public class UserHandler {
 
     @Autowired
     UserRepository userRepository;
-
-    @Autowired
-    private RedisTemplate<Long, Object> redisTemplate;
 
     public UserRequestDto createUser(UserRequestDto userRequestDto) {
         try {
@@ -28,8 +24,6 @@ public class UserHandler {
             userResult.setId(userres.getId());
             userResult.setLname(userres.getLname());
             userResult.setFname(userres.getFname());
-
-            redisTemplate.opsForValue().set(userResult.getId(), userResult);
             return userResult;
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -38,11 +32,8 @@ public class UserHandler {
 
     }
 
+    @Cacheable(value = "myCache", key = "'user_' + #id")
     public UserRequestDto getUser(Long id) {
-
-        if (redisTemplate.hasKey(id)) {
-            return (UserRequestDto) redisTemplate.opsForValue().get(id);
-        }
         User user = userRepository.getReferenceById(id);
         UserRequestDto userResult = new UserRequestDto();
         userResult.setId(user.getId());

@@ -2,8 +2,10 @@ package com.example.redisproj.dto;
 
 import lombok.*;
 
+import java.io.Serializable;
 
-public class UserRequestDto {
+
+public class UserRequestDto implements Serializable {
     Long id;
     private String fname;
 
